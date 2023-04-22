@@ -4,16 +4,24 @@ const express = require('express');
 const app = express();
 const dotenv = require("dotenv")
 dotenv.config()
-const utils = require ('./utils');
+app.set('view engine', 'ejs');
+const db = require("./db");
+db.connect();
+const passport = require("passport");
+require("./passportConfig")(passport);
+const jwt = require("jsonwebtoken")
+
 
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
 
-app.get('/', (req, res) => {
-	res.sendFile(__dirname + '/index.html');
-})
+app.get('/', function(req, res) {
+	res.render('pages/auth');
+});
 
-app.get('/videoplayer', (req, res) => {
+app.get('/videoplayer',
+	passport.authenticate("jwt", { session: false }),
+	(req, res, next) => {
 	const range = req.headers.range;
 	const chunkSize = 1e6;
 
@@ -56,25 +64,47 @@ app.get('/videoplayer', (req, res) => {
 	});
   });
 
-app.get ('/auth', async (req, res) => {
-	try {
-		res.redirect (utils.request_get_auth_code_url);
-	} catch (error) {
-		res.sendStatus (500);
-		console.log (error.message);
+
+app.get(
+	"/auth/google",
+	passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+app.get(
+	"/profile",
+	passport.authenticate("jwt", { session: false }),
+	(req, res, next) => {
+		res.send("Welcome");
 	}
+);
+
+app.get(
+	"/auth/redirect",
+	passport.authenticate("google", { session: false }),
+	(req, res) => {
+		jwt.sign(
+			{ user: req.user },
+			"secretKey",
+			{ expiresIn: "1h" },
+			(err, token) => {
+				if (err) {
+					res.redirect('/error', {});
+				}
+				res.render('pages/success', {user: req.user.google, token: token})
+			}
+		);
+	}
+);
+
+app.get('/error', (req, res) => res.send("error logging in"));
+
+app.get('/logout',
+	function(req, res, next) {
+	console.log("logged out!");
+	res.redirect('/');
 });
 
-app.get (process.env.REDIRECT_URI, async (req, res) => {
-	const authorization_token = req.query;
-	console.log ({auth_server_response: authorization_token});
-	try {
-		res.sendFile(__dirname + '/index.html');
-	} catch (error) {
-		console.log (error.message);
-		res.sendStatus (500);
-	}
+app.listen(3000, () => {
+	console.log(`Listening on port 3000`);
 });
-
-app.listen(3000);
 
