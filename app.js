@@ -1,8 +1,10 @@
 const express = require('express');
 const fs = require('fs');
 const app = express();
+const dotenv = require("dotenv")
+dotenv.config()
 const utils = require ('./utils');
-const {get_access_token, get_profile_data} = require("./utils");
+const {get_access_token} = require("./utils");
 
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
@@ -12,7 +14,7 @@ app.get('/videoplayer', (req, res) => {
 	const range = req.headers.range
 	const videoPath = './video.mov';
 	const videoSize = fs.statSync(videoPath).size
-	const chunkSize = 1 * 1e6;
+	const chunkSize = 1e6;
 	const start = Number(range.replace(/\D/g, ""))
 	const end = Math.min(start + chunkSize, videoSize - 1)
 	const contentLength = end - start + 1;
@@ -39,7 +41,7 @@ app.get ('/auth', async (req, res) => {
 	}
 });
 
-app.get ('/auth/redirect', async (req, res) => {
+app.get (process.env.REDIRECT_URI, async (req, res) => {
 	const authorization_token = req.query;
 	console.log ({auth_server_response: authorization_token});
 	try {
