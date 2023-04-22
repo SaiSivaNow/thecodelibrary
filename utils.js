@@ -5,11 +5,14 @@ dotenv.config()
 
 const google_auth_token_endpoint ='https://accounts.google.com/o/oauth2/v2/auth';
 const google_access_token_endpoint = 'https://oauth2.googleapis.com/token';
+let redirect_url = process.env.DEV_URL;
+if (process.env.DEPLOY_ENV === 'PROD') {
+    redirect_url = process.env.PROD_URL
+}
 const query_params = {
     client_id: process.env.CLIENT_APP_ID,
-    redirect_uri: `https://thecodelibrary.in${process.env.REDIRECT_URI}`,
+    redirect_uri: `${redirect_url}${process.env.REDIRECT_URI}`,
 };
-
 const get_access_token = async auth_code => {
     const access_token_params = {
         ...query_params,

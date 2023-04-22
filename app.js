@@ -4,7 +4,6 @@ const app = express();
 const dotenv = require("dotenv")
 dotenv.config()
 const utils = require ('./utils');
-const {get_access_token} = require("./utils");
 
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
