@@ -2,6 +2,8 @@ const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 const bucketName = 'thecodelibrary';
 const objectKey = 'video.mov';
+const app = express();
+
 
 app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/index.html');
