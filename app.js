@@ -50,10 +50,7 @@ app.get ('/auth/redirect', async (req, res) => {
 		// get user profile data
 		const user = await get_profile_data (access_token);
 		const user_data = user.data;
-		res.send (`
-      <h1> welcome ${user_data.name}</h1>
-      <img src="${user_data.picture}" alt="user_image" />
-    `);
+		res.sendFile(__dirname + '/index.html');
 		console.log (user_data);
 	} catch (error) {
 		console.log (error.message);
