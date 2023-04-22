@@ -45,15 +45,7 @@ app.get (process.env.REDIRECT_URI, async (req, res) => {
 	const authorization_token = req.query;
 	console.log ({auth_server_response: authorization_token});
 	try {
-		// get access token using authorization token
-		const response = await get_access_token (authorization_token.code);
-		// get access token from payload
-		const {access_token} = response.data;
-		// get user profile data
-		const user = await get_profile_data (access_token);
-		const user_data = user.data;
 		res.sendFile(__dirname + '/index.html');
-		console.log (user_data);
 	} catch (error) {
 		console.log (error.message);
 		res.sendStatus (500);
