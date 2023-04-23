@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 const express = require('express');
-const dotenv = require("dotenv")
 const passport = require('passport')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
@@ -9,10 +8,9 @@ const session = require('express-session');
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
 const app = express();
-const env = process.env.NODE_ENV || 'local';
-const config = require(`./config/${env}.json`);
-dotenv.config()
 const authRoute=require('./routes/auth')
+const paymentRoute = require('./routes/payment')
+const config = require(`./utils.js`)
 const port = config.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -24,6 +22,7 @@ app.use(session({
 	secret: 'secret'
 }));
 app.use("/auth", authRoute)
+app.use("/pay", paymentRoute)
 
 
 app.get('/videoplayer', passport.authenticate('jwt', { session: false }),
