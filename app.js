@@ -8,9 +8,12 @@ const session = require('express-session');
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
 const app = express();
+const dotenv = require("dotenv");
+const env = process.env.NODE_ENV || 'prod';
+const config = require(`./config/${env}.json`);
+dotenv.config()
 const authRoute=require('./routes/auth')
 const paymentRoute = require('./routes/payment')
-const config = require(`./utils.js`)
 const port = config.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }))
