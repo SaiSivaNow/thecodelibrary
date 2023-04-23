@@ -1,19 +1,35 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 const express = require('express');
-const app = express();
 const dotenv = require("dotenv")
-dotenv.config()
-const utils = require ('./utils');
-
+const passport = require('passport')
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const session = require('express-session');
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
+const app = express();
+dotenv.config()
 
-app.get('/', (req, res) => {
-	res.sendFile(__dirname + '/index.html');
-})
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(passport.initialize());
+app.use(session({
+	resave: false,
+	saveUninitialized: true,
+	secret: 'secret'
+}));
 
-app.get('/videoplayer', (req, res) => {
+let redirect_host = process.env.PROD_HOST;
+if (process.env.DEPLOY_ENV === 'DEV') {
+	redirect_host = process.env.DEV_HOST
+}
+const port = process.env.PORT || 3000
+
+
+app.get('/videoplayer', passport.authenticate('jwt', { session: false }),
+	(req, res) => {
 	const range = req.headers.range;
 	const chunkSize = 1e6;
 
@@ -56,25 +72,86 @@ app.get('/videoplayer', (req, res) => {
 	});
   });
 
-app.get ('/auth', async (req, res) => {
-	try {
-		res.redirect (utils.request_get_auth_code_url);
-	} catch (error) {
-		res.sendStatus (500);
-		console.log (error.message);
+const jwt = require('jsonwebtoken')
+var JwtStrategy = require('passport-jwt').Strategy
+var ExtractJwt = require('passport-jwt').ExtractJwt;
+var opts = {}
+opts.jwtFromRequest = function(req) {
+	var token = null;
+	if (req && req.cookies)
+	{
+		token = req.cookies['jwt'];
 	}
+	return token;
+};
+opts.secretOrKey = 'secret';
+
+passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+	console.log("JWT BASED  VALIDATION GETTING CALLED")
+	console.log("JWT", jwt_payload)
+	return done(null, jwt_payload.data)
+}));
+
+passport.use(new GoogleStrategy({
+		clientID: process.env.CLIENT_APP_ID,
+		clientSecret: process.env.CLIENT_APP_SECRET,
+		callbackURL: `${redirect_host}${process.env.REDIRECT_URI}`
+	},
+	function(accessToken, refreshToken, profile, cb) {
+		//console.log(accessToken, refreshToken, profile)
+		console.log("GOOGLE BASED OAUTH VALIDATION GETTING CALLED")
+		return cb(null, profile)
+	}
+));
+
+passport.serializeUser(function(user, cb) {
+	console.log('I should have jack ')
+	cb(null, user);
 });
 
-app.get (process.env.REDIRECT_URI, async (req, res) => {
-	const authorization_token = req.query;
-	console.log ({auth_server_response: authorization_token});
-	try {
-		res.sendFile(__dirname + '/index.html');
-	} catch (error) {
-		console.log (error.message);
-		res.sendStatus (500);
-	}
+passport.deserializeUser(function(obj, cb) {
+	console.log('I wont have jack shit')
+	cb(null, obj);
 });
 
-app.listen(3000);
+app.get('/', (req, res)=>{
+	res.sendFile('home.html', {root: __dirname+'/public'})
+})
 
+app.get('/login', (req, res)=>{
+	res.sendFile('login.html', {root: __dirname+'/public'})
+})
+
+app.get('/auth/google',  passport.authenticate('google', { scope: ['profile','email'] }))
+
+app.get('/profile', passport.authenticate('jwt', { session: false }) ,(req,res)=>{
+	res.send(`THIS IS UR PROFILE MAAANNNN ${req.user.email}`)
+})
+
+app.get(process.env.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
+	console.log('redirected', req.user)
+	let user = {
+		displayName: req.user.displayName,
+		name: req.user.name.givenName,
+		email: req.user._json.email,
+		provider: req.user.provider }
+	console.log(user)
+
+	let token = jwt.sign({
+		data: user
+	}, 'secret', { expiresIn: '4h' });
+	res.cookie('jwt', token)
+	res.sendFile(__dirname + '/index.html')
+})
+
+app.get('/logout', function(req, res, next){
+	req.logout(function(err) {
+		if (err) { return next(err); }
+		res.clearCookie('jwt')
+		res.redirect('/');
+	});
+});
+
+app.listen( port, ()=>{
+	console.log(`Sever TheCodeLibrary listening on port ${port}`)
+})
