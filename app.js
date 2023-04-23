@@ -95,7 +95,7 @@ passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
 passport.use(new GoogleStrategy({
 		clientID: process.env.CLIENT_APP_ID,
 		clientSecret: process.env.CLIENT_APP_SECRET,
-		callbackURL: `http://localhost:3000${process.env.REDIRECT_URI}`
+		callbackURL: `${redirect_host}${process.env.REDIRECT_URI}`
 	},
 	function(accessToken, refreshToken, profile, cb) {
 		//console.log(accessToken, refreshToken, profile)
@@ -141,7 +141,7 @@ app.get(process.env.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
 		data: user
 	}, 'secret', { expiresIn: '4h' });
 	res.cookie('jwt', token)
-	res.sendFile(__dirname+'index.html')
+	res.sendFile(__dirname + '/index.html')
 })
 
 app.get('/logout', function(req, res, next){
