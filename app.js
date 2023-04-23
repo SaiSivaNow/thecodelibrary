@@ -5,7 +5,6 @@ const dotenv = require("dotenv")
 const passport = require('passport')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
@@ -13,6 +12,8 @@ const app = express();
 const env = process.env.NODE_ENV || 'local';
 const config = require(`./config/${env}.json`);
 dotenv.config()
+const authRoute=require('./routes/auth')
+const port = config.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
@@ -22,9 +23,7 @@ app.use(session({
 	saveUninitialized: true,
 	secret: 'secret'
 }));
-
-const base_url = config.BASE_URL;
-const port = config.PORT;
+app.use("/auth", authRoute)
 
 
 app.get('/videoplayer', passport.authenticate('jwt', { session: false }),
@@ -71,86 +70,14 @@ app.get('/videoplayer', passport.authenticate('jwt', { session: false }),
 	});
   });
 
-const jwt = require('jsonwebtoken')
-var JwtStrategy = require('passport-jwt').Strategy
-var ExtractJwt = require('passport-jwt').ExtractJwt;
-var opts = {}
-opts.jwtFromRequest = function(req) {
-	var token = null;
-	if (req && req.cookies)
-	{
-		token = req.cookies['jwt'];
-	}
-	return token;
-};
-opts.secretOrKey = 'secret';
-
-passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-	console.log("JWT BASED  VALIDATION GETTING CALLED")
-	console.log("JWT", jwt_payload)
-	return done(null, jwt_payload.data)
-}));
-
-passport.use(new GoogleStrategy({
-		clientID: config.CLIENT_APP_ID,
-		clientSecret: config.CLIENT_APP_SECRET,
-		callbackURL: `${base_url}${config.REDIRECT_URI}`
-	},
-	function(accessToken, refreshToken, profile, cb) {
-		//console.log(accessToken, refreshToken, profile)
-		console.log("GOOGLE BASED OAUTH VALIDATION GETTING CALLED")
-		return cb(null, profile)
-	}
-));
-
-passport.serializeUser(function(user, cb) {
-	console.log('I should have jack ')
-	cb(null, user);
-});
-
-passport.deserializeUser(function(obj, cb) {
-	console.log('I wont have jack shit')
-	cb(null, obj);
-});
-
 app.get('/', (req, res)=>{
 	res.sendFile('home.html', {root: __dirname+'/public'})
 })
-
-app.get('/login', (req, res)=>{
-	res.sendFile('login.html', {root: __dirname+'/public'})
-})
-
-app.get('/auth/google',  passport.authenticate('google', { scope: ['profile','email'] }))
 
 app.get('/profile', passport.authenticate('jwt', { session: false }) ,(req,res)=>{
 	res.send(`THIS IS UR PROFILE MAAANNNN ${req.user.email}`)
 })
 
-app.get(config.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
-	console.log('redirected', req.user)
-	let user = {
-		displayName: req.user.displayName,
-		name: req.user.name.givenName,
-		email: req.user._json.email,
-		provider: req.user.provider }
-	console.log(user)
-
-	let token = jwt.sign({
-		data: user
-	}, 'secret', { expiresIn: '4h' });
-	res.cookie('jwt', token)
-	res.sendFile(__dirname + '/index.html')
-})
-
-app.get('/logout', function(req, res, next){
-	req.logout(function(err) {
-		if (err) { return next(err); }
-		res.clearCookie('jwt')
-		res.redirect('/');
-	});
-});
-
-app.listen( port, ()=>{
+app.listen( port, ()=> {
 	console.log(`Sever TheCodeLibrary listening on port ${port}`)
 })
