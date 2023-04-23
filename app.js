@@ -10,6 +10,8 @@ const session = require('express-session');
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
 const app = express();
+const env = process.env.NODE_ENV || 'local';
+const config = require(`./config/${env}.json`);
 dotenv.config()
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -21,11 +23,8 @@ app.use(session({
 	secret: 'secret'
 }));
 
-let redirect_host = process.env.PROD_HOST;
-if (process.env.DEPLOY_ENV === 'DEV') {
-	redirect_host = process.env.DEV_HOST
-}
-const port = process.env.PORT || 3000
+const base_url = config.BASE_URL;
+const port = config.PORT;
 
 
 app.get('/videoplayer', passport.authenticate('jwt', { session: false }),
@@ -93,9 +92,9 @@ passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
 }));
 
 passport.use(new GoogleStrategy({
-		clientID: process.env.CLIENT_APP_ID,
-		clientSecret: process.env.CLIENT_APP_SECRET,
-		callbackURL: `${redirect_host}${process.env.REDIRECT_URI}`
+		clientID: config.CLIENT_APP_ID,
+		clientSecret: config.CLIENT_APP_SECRET,
+		callbackURL: `${base_url}${config.REDIRECT_URI}`
 	},
 	function(accessToken, refreshToken, profile, cb) {
 		//console.log(accessToken, refreshToken, profile)
@@ -128,7 +127,7 @@ app.get('/profile', passport.authenticate('jwt', { session: false }) ,(req,res)=
 	res.send(`THIS IS UR PROFILE MAAANNNN ${req.user.email}`)
 })
 
-app.get(process.env.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
+app.get(config.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
 	console.log('redirected', req.user)
 	let user = {
 		displayName: req.user.displayName,

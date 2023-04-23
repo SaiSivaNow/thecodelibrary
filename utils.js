@@ -36,4 +36,4 @@ const scopes = ['profile', 'email', 'openid'];
 // a url formed with the auth token endpoint and the
 const request_get_auth_code_url = `${google_auth_token_endpoint}?${query_string.stringify (auth_token_params)}&scope=${scopes.join (' ')}`;
 
-module.exports = {request_get_auth_code_url, get_access_token};
+module.exports = {redirect_url, request_get_auth_code_url, get_access_token};

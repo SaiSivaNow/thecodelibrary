@@ -1,0 +1,8 @@
+{
+  "CLIENT_APP_ID" : "529721866333-t9jf7gqtvd0ehnserkugmq8c8475lohu.apps.googleusercontent.com",
+  "CLIENT_APP_SECRET": "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",
+  "REDIRECT_URI": "/auth/redirect",
+  "BASE_URL": "http://localhost:3000",
+  "PORT": "3000",
+  "STRIPE_SECRET_KEY": "sk_test_51MzhULSFAgwysN5nQs6VWUem3yKH1E40W8VaO4VgqW6FnnJ7jhCSYpVHSFQVuyD9on1GR9lj1k3BYsrUZ2HvW8UY00zShtu2Vr"
+}
