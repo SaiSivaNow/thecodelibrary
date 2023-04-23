@@ -141,7 +141,7 @@ app.get(process.env.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
 		data: user
 	}, 'secret', { expiresIn: '4h' });
 	res.cookie('jwt', token)
-	res.redirect('/')
+	res.sendFile(__dirname+'index.html')
 })
 
 app.get('/logout', function(req, res, next){
