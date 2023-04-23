@@ -1,13 +1,13 @@
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20').Strategy
-const dotenv = require("dotenv")
-const env = process.env.NODE_ENV || 'local';
-const config = require(`../config/${env}.json`)
-dotenv.config()
 const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
 const JwtStrategy = require('passport-jwt').Strategy;
+const dotenv = require("dotenv");
+const env = process.env.NODE_ENV || 'prod';
+const config = require(`../config/${env}.json`);
+dotenv.config()
 const base_url = config.BASE_URL;
 
 let opts = {}
