@@ -7,12 +7,11 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
-
 const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
-const DATA = [{email:"govardhan.yannam@gmail.com", provider:"google"}]
-
 const app = express();
+dotenv.config()
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(passport.initialize());
@@ -21,7 +20,12 @@ app.use(session({
 	saveUninitialized: true,
 	secret: 'secret'
 }));
-dotenv.config()
+
+let redirect_host = process.env.PROD_HOST;
+if (process.env.DEPLOY_ENV === 'DEV') {
+	redirect_host = process.env.DEV_HOST
+}
+const port = process.env.PORT || 3000
 
 
 app.get('/videoplayer', passport.authenticate('jwt', { session: false }),
@@ -85,12 +89,7 @@ opts.secretOrKey = 'secret';
 passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
 	console.log("JWT BASED  VALIDATION GETTING CALLED")
 	console.log("JWT", jwt_payload)
-	if (CheckUser(jwt_payload.data)) {
-		return done(null, jwt_payload.data)
-	} else {
-		// user account doesnt exists in the DATA
-		return done(null, false);
-	}
+	return done(null, jwt_payload.data)
 }));
 
 passport.use(new GoogleStrategy({
@@ -123,25 +122,7 @@ app.get('/login', (req, res)=>{
 	res.sendFile('login.html', {root: __dirname+'/public'})
 })
 
-app.get('/auth/email', (req, res)=>{
-	res.sendFile('login_form.html',  {root: __dirname+'/public'})
-})
-
 app.get('/auth/google',  passport.authenticate('google', { scope: ['profile','email'] }))
-
-app.post('/auth/email', (req, res)=>{
-
-	if(CheckUser(req.body))
-	{
-		let token =    jwt.sign({
-			data: req.body
-		}, 'secret', { expiresIn: '1h' });
-		res.cookie('jwt', token)
-		res.send(`Log in success ${req.body.email}`)
-	}else{
-		res.send('Invalid login credentials')
-	}
-})
 
 app.get('/profile', passport.authenticate('jwt', { session: false }) ,(req,res)=>{
 	res.send(`THIS IS UR PROFILE MAAANNNN ${req.user.email}`)
@@ -156,7 +137,6 @@ app.get(process.env.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
 		provider: req.user.provider }
 	console.log(user)
 
-	FindOrCreate(user)
 	let token = jwt.sign({
 		data: user
 	}, 'secret', { expiresIn: '4h' });
@@ -164,30 +144,14 @@ app.get(process.env.REDIRECT_URI, passport.authenticate('google'),(req, res)=>{
 	res.redirect('/')
 })
 
-function FindOrCreate(user){
-	if(CheckUser(user)){  // if user exists then return user
-		return user
-	}else{
-		DATA.push(user) // else create a new user
-	}
-}
-function CheckUser(input){
-	console.log(DATA)
-	console.log(input)
+app.get('/logout', function(req, res, next){
+	req.logout(function(err) {
+		if (err) { return next(err); }
+		res.clearCookie('jwt')
+		res.redirect('/');
+	});
+});
 
-	for (var i in DATA) {
-		if(input.email===DATA[i].email && (input.password===DATA[i].password || DATA[i].provider===input.provider))
-		{
-			console.log('User found in DATA')
-			return true
-		}
-		else
-			null
-		//console.log('no match')
-	}
-	return false
-}
-const port = process.env.PORT || 3000
 app.listen( port, ()=>{
-	console.log(`Sever ARG0 listening on port ${port}`)
+	console.log(`Sever TheCodeLibrary listening on port ${port}`)
 })
