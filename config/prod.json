@@ -4,5 +4,5 @@
   "REDIRECT_URI": "/auth/redirect",
   "BASE_URL": "https://thecodelibrary.in",
   "PORT": "3000",
-  "STRIPE_SECRET_KEY": "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"
+  "STRIPE_SECRET_KEY": "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"
 }

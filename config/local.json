@@ -4,5 +4,5 @@
   "REDIRECT_URI": "/auth/redirect",
   "BASE_URL": "http://localhost:3000",
   "PORT": "3000",
-  "STRIPE_SECRET_KEY": "sk_test_51MzhULSFAgwysN5nQs6VWUem3yKH1E40W8VaO4VgqW6FnnJ7jhCSYpVHSFQVuyD9on1GR9lj1k3BYsrUZ2HvW8UY00zShtu2Vr"
+  "STRIPE_SECRET_KEY": "sk_test_51N0P7XSBIGSHkrhqZNC4NtQWmwhBQk5AewLQsXkw1fJ0wxpL1nfjvFMTomdNX9EFyyocfO39kIB9gSk6EIvsCZxO00eVifH4ZZ"
 }

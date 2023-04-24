@@ -22,20 +22,10 @@ router.get('/cancel', (req, res) => {
 
 router.post('/create-checkout-session', async (req, res) => {
 
-    const product = await stripe.products.create({
-        name: 'Just Enough Java',
-    });
-
-    const price = await stripe.prices.create({
-        unit_amount: 200,
-        currency: 'inr',
-        product: product.id,
-    });
-
     const session = await stripe.checkout.sessions.create({
         line_items: [
             {
-                price: price.id,
+                price: 'price_1N0Q64SBIGSHkrhqsSgWZR9T',
                 quantity: 1,
             },
         ],
