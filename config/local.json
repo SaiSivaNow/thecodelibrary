@@ -3,6 +3,5 @@
   "CLIENT_APP_SECRET": "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",
   "REDIRECT_URI": "/auth/redirect",
   "BASE_URL": "http://localhost:3000",
-  "PORT": "3000",
-  "STRIPE_SECRET_KEY": "sk_test_51N0P7XSBIGSHkrhqZNC4NtQWmwhBQk5AewLQsXkw1fJ0wxpL1nfjvFMTomdNX9EFyyocfO39kIB9gSk6EIvsCZxO00eVifH4ZZ"
+  "PORT": "3000"
 }
