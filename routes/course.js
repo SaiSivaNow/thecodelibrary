@@ -15,6 +15,7 @@ const validateRequest = [
     body('details').isArray({ min: 1 }).withMessage('Details must be an array with at least one element'),
     body('total_length').notEmpty().withMessage('Total length is required'),
     body('price_id').notEmpty().withMessage('Price ID is required'),
+    body('price').notEmpty().withMessage('Price is required'),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

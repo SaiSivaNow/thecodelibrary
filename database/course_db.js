@@ -1,15 +1,17 @@
-const Course = require('../models/model');
+const Course = require('../models/model').Course;
+const User = require('../models/model').User;
 
 const createCourse = async (req, res) => {
     try {
-        const {course_id, title, details, total_length, price_id} = req.body;
+        const {course_id, title, details, total_length, price_id, price} = req.body;
 
         const newCourse = new Course({
             course_id,
             title,
             details,
             total_length,
-            price_id
+            price_id,
+            price
         });
 
         const savedCourse = await newCourse.save();
@@ -21,10 +23,36 @@ const createCourse = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
     try {
-        const courses = await Course.find();
-        res.json(courses);
+        const userId = req.query.userId;
+        const user = userId ? await User.findOne({email: userId}) : null;
+
+        if (userId && !user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const enrolledCourseIds = user ? user.courseAccess.map((access) => access.course_id) : [];
+
+        const enrolledCourses = await Course.find({ course_id: { $in: enrolledCourseIds } });
+        const availableCourses = await Course.find({ course_id: { $nin: enrolledCourseIds } });
+
+        const response = {
+            enrolledCourses: enrolledCourses.map((course) => ({
+                course_id: course.course_id,
+                title: course.title,
+                details: course.details,
+                price: course.price
+            })),
+            availableCourses: availableCourses.map((course) => ({
+                course_id: course.course_id,
+                title: course.title,
+                details: course.details,
+                price: course.price
+            })),
+        };
+
+        res.json(response);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ error: 'Unable to fetch enrolled courses' });
     }
 };
 
