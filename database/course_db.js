@@ -28,10 +28,10 @@ const getAllCourses = async (req, res) => {
     }
 };
 
-
 const getCourseById = async (req, res) => {
     try {
-        const course = await Course.findById(req.params.id);
+        const field = req.query.course_id;
+        const course = await Course.findOne({course_id: field});
         if (!course) {
             res.status(404).json({message: 'Course not found'});
             return;
@@ -44,31 +44,31 @@ const getCourseById = async (req, res) => {
 
 const updateCourseById = async (req, res) => {
     try {
-        const course = await Course.findByIdAndUpdate(
-            req.params.id,
+        const course = await Course.findOneAndUpdate(
+            { course_id: req.query.course_id },
             req.body,
-            {new: true}
+            { new: true }
         );
         if (!course) {
-            res.status(404).json({message: 'Course not found'});
+            res.status(404).json({ message: 'Course not found' });
             return;
         }
         res.json(course);
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };
 
 const deleteCourseById = async (req, res) => {
     try {
-        const course = await Course.findByIdAndDelete(req.params.id);
+        const course = await Course.findOneAndDelete({ course_id: req.query.course_id });
         if (!course) {
-            res.status(404).json({message: 'Course not found'});
+            res.status(404).json({ message: 'Course not found' });
             return;
         }
-        res.json({message: 'Course deleted successfully'});
+        res.json({ message: 'Course deleted successfully' });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };
 

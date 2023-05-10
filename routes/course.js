@@ -1,5 +1,5 @@
 const express = require('express');
-const { body, param, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 const router = express.Router();
 const dotenv = require("dotenv");
 const env = process.env.NODE_ENV || 'prod';
@@ -23,9 +23,8 @@ const validateRequest = [
     }
 ];
 
-// Middleware for validating ID parameter
-const validateId = [
-    param('id').notEmpty().withMessage('ID parameter is required'),
+const validateCourseId = [
+    query('course_id').notEmpty().withMessage('course_id parameter is required'),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -35,19 +34,10 @@ const validateId = [
     }
 ];
 
-// Create a new course
-router.post('/courses', validateRequest, CourseDb.createCourse);
-
-// Read all courses
-router.get('/courses', CourseDb.getAllCourses);
-
-// Read a course by ID
-router.get('/courses/:id', validateId, CourseDb.getCourseById);
-
-// Update a course by ID
-router.patch('/courses/:id', validateId, validateRequest, CourseDb.updateCourseById);
-
-// Delete a course by ID
-router.delete('/courses/:id', validateId, CourseDb.deleteCourseById);
+router.post('/', validateRequest, CourseDb.createCourse);
+router.get('/', CourseDb.getAllCourses);
+router.get('/courseById', validateCourseId, CourseDb.getCourseById);
+router.patch('/updateCourse', validateCourseId, validateRequest, CourseDb.updateCourseById);
+router.delete('/deleteCourse', validateCourseId, CourseDb.deleteCourseById);
 
 module.exports = router;

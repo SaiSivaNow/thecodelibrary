@@ -28,7 +28,7 @@ app.use(session({
 }));
 app.use("/auth", authRoute)
 app.use("/pay", paymentRoute)
-app.use("/course", courseRoute)
+app.use("/courses", courseRoute)
 initDb();
 
 app.get('/videoplayer', passport.authenticate('jwt', {session: false}),
