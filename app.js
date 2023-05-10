@@ -9,7 +9,7 @@ const bucketName = 'thecodelibrary-lite';
 const objectKey = 'programming.mov';
 const app = express();
 const dotenv = require("dotenv");
-const env = process.env.NODE_ENV || 'local';
+const env = process.env.NODE_ENV || 'prod';
 const config = require(`./config/${env}.json`);
 dotenv.config();
 const authRoute = require('./routes/auth');
