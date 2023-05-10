@@ -11,13 +11,14 @@ const app = express();
 const dotenv = require("dotenv");
 const env = process.env.NODE_ENV || 'prod';
 const config = require(`./config/${env}.json`);
-dotenv.config()
-const authRoute = require('./routes/auth')
-const paymentRoute = require('./routes/payment')
-const courseRoute = require('./routes/course')
+dotenv.config();
+const authRoute = require('./routes/auth');
+const paymentRoute = require('./routes/payment');
+const courseRoute = require('./routes/course');
+const initDb = require('./database/db_config');
 const port = config.PORT;
 
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.json());
 app.use(cookieParser())
 app.use(passport.initialize());
 app.use(session({
@@ -28,7 +29,7 @@ app.use(session({
 app.use("/auth", authRoute)
 app.use("/pay", paymentRoute)
 app.use("/course", courseRoute)
-
+initDb();
 
 app.get('/videoplayer', passport.authenticate('jwt', {session: false}),
     (req, res) => {
@@ -85,3 +86,13 @@ app.get('/profile', passport.authenticate('jwt', {session: false}), (req, res) =
 app.listen(port, () => {
     console.log(`Sever TheCodeLibrary listening on port ${port}`)
 })
+
+process.on('SIGINT', () => {
+    console.log('Received SIGINT signal. Shutting down gracefully...');
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('Received SIGTERM signal. Shutting down gracefully...');
+    process.exit(0);
+});
