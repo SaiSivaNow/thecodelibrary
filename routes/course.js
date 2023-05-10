@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport');
 const { body, query, validationResult } = require('express-validator');
 const router = express.Router();
 const dotenv = require("dotenv");
@@ -34,10 +35,10 @@ const validateCourseId = [
     }
 ];
 
-router.post('/', validateRequest, CourseDb.createCourse);
-router.get('/', CourseDb.getAllCourses);
-router.get('/courseById', validateCourseId, CourseDb.getCourseById);
-router.patch('/updateCourse', validateCourseId, validateRequest, CourseDb.updateCourseById);
-router.delete('/deleteCourse', validateCourseId, CourseDb.deleteCourseById);
+router.post('/', passport.authenticate('jwt', {session: false}), validateRequest, CourseDb.createCourse);
+router.get('/', passport.authenticate('jwt', {session: false}), CourseDb.getAllCourses);
+router.get('/courseById', passport.authenticate('jwt', {session: false}), validateCourseId, CourseDb.getCourseById);
+router.patch('/updateCourse', passport.authenticate('jwt', {session: false}), validateCourseId, validateRequest, CourseDb.updateCourseById);
+router.delete('/deleteCourse', passport.authenticate('jwt', {session: false}), validateCourseId, CourseDb.deleteCourseById);
 
 module.exports = router;
